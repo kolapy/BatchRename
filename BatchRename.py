@@ -4,6 +4,7 @@ import os
 import click
 import shutil
 
+
 #--------------------------------- FUNCTIONS -----------------------------
 
 # Fucntion for extracting the meta data and formating it inside a python disctonary
@@ -86,11 +87,13 @@ def classify_time_of_day(date_string):
 
 #--------------------------------- MAIN LOGIC -----------------------------
 @click.command(help="This script renames video files based on their metadata.")
-@click.argument('input_directory', type=click.Path(exists=True))
+#@click.argument('input_directory', type=click.Path(exists=True))
 @click.option('-d','--debug', is_flag=True, help='Enable debugging output.')
 @click.option('-l','--log', is_flag=True, help='Enable log file output.')
+@click.option('-r','--recursive', is_flag=True, help='Enable recursive file walk.')
+@click.option('-i', '--input', type=click.Path(exists=True), help='Input directory to process.')
 
-def main(input_directory,debug,log):
+def main(debug,log,recursive,input):
     wordmark= r"""
   ____        _       _       _____                                      
  |  _ \      | |     | |     |  __ \                                     
@@ -99,8 +102,11 @@ def main(input_directory,debug,log):
  | |_) | (_| | || (__| | | | | | \ \  __/ | | | (_| | | | | | |  __/ |   
  |____/ \__,_|\__\___|_| |_| |_|  \_\___|_| |_|\__,_|_| |_| |_|\___|_|                                                                                                                                                  
 """
-    click.secho(wordmark, fg="green",bold=True, blink=True)
-    print(f"The input directory is: {input_directory}")
+    click.secho(wordmark, fg="green",bold=True, blink=True) #Print the wordmark
+
+    input_directory = input or click.prompt('Enter the input directory', type=click.Path(exists=True))#Default option
+
+    click.echo(f"The input directory is: {click.style(input_directory, fg='green')}")
 
     print("Please pick a name for this project")
     # Prompt the user for the project name
@@ -116,8 +122,13 @@ def main(input_directory,debug,log):
         
         renamed_files = [] #Initialize the renamed list
 
+        if recursive:
+            walker = os.walk(input_directory)
+        else:
+            walker = [(input_directory, [], files) for _, _, files in os.walk(input_directory)]
+
         # Iterate over the files in the directory
-        for root, dirs, files in os.walk(input_directory):
+        for root, dirs, files in walker:
             for file_name in files:
                 # Construct the full path to the file
                 file_path = os.path.join(root, file_name)
@@ -131,16 +142,16 @@ def main(input_directory,debug,log):
                         # Extract metadata for the current file
                         metadata = extract_metadata(file_path)
                         num_files += 1
-                        click.echo(f"{click.style("File to rename: ", fg='red')}{file_path}")
+                        click.echo(f"{click.style('File to rename: ', fg='red')}{file_path}")
 
                         #-------------------DEBUGGING FLAG-----------------------
                         if debug:
-                            click.secho("Debug mode enabled. Printing metadata:", fg="yellow",bold=True)
+                            click.secho("Debug mode enabled. Printing metadata:", fg='yellow',bold=True)
                             # Print the extracted metadata if available  (For debugging)
                             if metadata:
                                 for key, value in metadata.items():
                                     #print(f"{key}: {value}")
-                                    click.echo(f"{click.style(f"{key}: ", fg='yellow')}{value}")
+                                    click.echo(f"{click.style(f'{key}: ', fg='yellow')}{value}")
                             else:
                                 print("Failed to extract metadata.")
                         #-------------------DEBUGGING FLAG-----------------------
@@ -163,7 +174,7 @@ def main(input_directory,debug,log):
 
                             # Generate the new file name
                             new_file_name = f"{date}_{project_name}_{shot_class}_{time_of_day_classification}_{shot_numberSTR}{file_extension}"
-                            click.echo(f"{click.style("New file name: ", fg='green')}{new_file_name}")
+                            click.echo(f"{click.style('New file name: ', fg='green')}{new_file_name}")
 
                             #Print a responsive seperation line
                             terminal_width, _ = shutil.get_terminal_size()
@@ -198,7 +209,7 @@ def main(input_directory,debug,log):
                         #-------------------LOGGING FLAG-------------------------
                     else:
                     #What to do with the non valid extensions
-                        click.echo(f"{click.style("Non-video file: ", fg='yellow')}{file_path}")
+                        click.echo(f"{click.style('Non-video file: ', fg='yellow')}{file_path}")
            
         print(f"Number of files renamed: {num_files}")
 
