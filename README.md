@@ -16,6 +16,8 @@ File format is as follows: {date}-{project}-{time}-{shot_class}-{shot_number}.{e
 
 - Python 3.x
 - FFmpeg (Make sure it's installed and available in the system PATH)
+- FFmpeg-python (pip install ffmpeg-python)
+- Click (pip install click)
 
 ## Usage
 
@@ -29,3 +31,11 @@ The following options are available:
     -l or --log: Enable log file output.
     -r or --recursive: Enable recursive file walk.
     -i INPUT_DIRECTORY or --input INPUT_DIRECTORY: Specify the input directory to process.
+
+## Executable
+
+The executable can be run from the terminal as well
+
+```bash
+BatchRename.exe [-d] [-l] [-r] [-i INPUT_DIRECTORY]
+```
