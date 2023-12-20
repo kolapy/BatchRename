@@ -180,6 +180,12 @@ def main(debug,log,recursive,input,sub):
 
                                 # Extract individual components from the relative path
                                 path_components = relative_path.split(os.path.sep)[:-1]
+
+                                #Hack for MacOs to drop the . from the start of the file path
+                                if len(path_components) > 0 and path_components[0] ==".":
+                                    path_components = path_components[1:]
+                                    print("PATH IF 0",path_components)
+                                
                                 click.echo(f"{click.style('Path components: ', fg='yellow')}{path_components}")
 
                                 # Use the extracted components in the new file name
